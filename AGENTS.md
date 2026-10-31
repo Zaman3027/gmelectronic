@@ -14,7 +14,7 @@ inquiry-intake backend.
   customer inquiries in a SQLite database.
 
 This is a plain **npm workspaces** monorepo. It uses **only open-source npm
-packages** — no Amazon/Brazil tooling, no internal registries.
+packages** with no internal registries.
 
 ## Tech stack
 
@@ -70,8 +70,8 @@ form fields and the zod schema in sync when either changes.
 
 ## Conventions for agents
 
-- **Open-source only.** Do not add Amazon-internal packages, Brazil configs, or
-  private registries. Install with `npm i <pkg> --workspace @mondal/<name>`.
+- **Open-source only.** Use publicly available packages and registries.
+  Install with `npm i <pkg> --workspace @mondal/<name>`.
 - **TypeScript + ESM everywhere.** Use `import`/`export`. In backend relative
   imports use the `.js` extension (NodeNext resolution compiles `.ts` → `.js`).
 - **Keep types in sync with the contract.** `InquiryInput` (backend zod infer)

@@ -4,8 +4,7 @@ Monorepo for the **Mondal Electronics** repair-shop website — an electronic
 repair business handling TVs, mobiles, washing machines, and any circuit-based
 device.
 
-Plain **npm workspaces** monorepo, **open-source packages only** (no Amazon /
-Brazil tooling).
+Plain **npm workspaces** monorepo, **open-source packages only**.
 
 ```
 mondal-electronics/
