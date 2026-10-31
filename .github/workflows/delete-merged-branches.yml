@@ -1,0 +1,47 @@
+name: Delete merged PR branches
+on:
+  pull_request:
+    types: [closed]
+permissions:
+  contents: write
+jobs:
+  cleanup:
+    if: >-
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref != github.event.repository.default_branch &&
+      github.event.pull_request.head.ref != 'main' &&
+      github.event.pull_request.head.ref != github.event.pull_request.base.ref
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete the merged branch if it has no new commits
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync } from 'node:fs';
+          const event = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
+          const pr = event.pull_request;
+          const branch = pr.head.ref;
+          const url = `https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/git/refs/heads/${encodeURIComponent(branch)}`;
+          const headers = {
+            Authorization: `Bearer ${process.env.GH_TOKEN}`,
+            Accept: 'application/vnd.github+json',
+          };
+          const current = await fetch(url, { headers });
+          if (current.status === 404) {
+            console.log('Branch was already deleted.');
+            process.exit(0);
+          }
+          if (!current.ok) throw new Error(`Read branch failed: ${current.status}`);
+          const ref = await current.json();
+          if (ref.object.sha !== pr.head.sha) {
+            console.log('Branch has new commits; leaving it intact.');
+            process.exit(0);
+          }
+          const deleted = await fetch(url, { method: 'DELETE', headers });
+          if (deleted.status !== 204 && deleted.status !== 404) {
+            throw new Error(`Delete branch failed: ${deleted.status}`);
+          }
+          console.log(`Deleted merged branch: ${branch}`);
+          JS
